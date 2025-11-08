@@ -1,36 +1,73 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskManager.Core.Entities;
+using TaskManager.Core.Interfaces;
 using TaskManager.Infrastructure.Data;
 
 namespace TaskManager.Infrastructure.Repositiries
 {
-    public class TaskRepository
+    public class TaskRepository : ITaskRepository
     {
         private readonly ApplicationDbContext _context;
 
         public TaskRepository(ApplicationDbContext context) => _context = context;
 
-        public async Task<List<TaskItem>> GetAllAsync() => await _context.Tasks.ToListAsync();
+        public async Task<IEnumerable<TaskItem>> GetAllAsync() => await _context.Tasks.ToListAsync();
 
-        public async Task<TaskItem?> GetByIdAsync(int id) => await _context.Tasks.FindAsync(id);
+        public async Task<TaskItem> GetByIdAsync(int id) => await _context.Tasks.FindAsync(id);
 
-        public async Task<TaskItem> CreateAsync(TaskItem task)
+        public async Task<TaskItem> AddAsync(TaskItem task)
         {
             _context.Tasks.Add(task);
             await _context.SaveChangesAsync();
             return task;
         }
 
-        public async Task<TaskItem?> UpdateAsync(int id, TaskItem updateTask)
+        //public async Task<TaskItem> CreateAsync(TaskItem task)
+        //{
+        //    _context.Tasks.Add(task);
+        //    await _context.SaveChangesAsync();
+        //    return task;
+        //}
+
+        public async Task<TaskItem> CreateAsync(TaskItem task)
         {
-            var existingTask = await _context.Tasks.FindAsync(id);
-            if (existingTask == null) return null;
-            
-            existingTask.Title = updateTask.Title;
-            existingTask.Description = updateTask.Description;
-            existingTask.DueDate = updateTask.DueDate;
-            existingTask.IsCompleted = updateTask.IsCompleted;
-            existingTask.Priority = updateTask.Priority;
+            // Убедимся, что Title не null
+            if (string.IsNullOrEmpty(task.Title))
+            {
+                task.Title = task.Description ?? "New Task";
+            }
+
+            // Убедимся, что CreateDate установлена
+            if (task.CreatedAt == default)
+            {
+                task.CreatedAt = DateTime.UtcNow;
+            }
+
+            // Убедимся, что Priority установлен
+            if (task.Priority == 0)
+            {
+                task.Priority = 1;
+            }
+
+            _context.Tasks.Add(task);
+            await _context.SaveChangesAsync();
+            return task;
+        }
+
+
+        public async Task<TaskItem> UpdateAsync(TaskItem task)
+        {
+            var existingTask = await _context.Tasks.FindAsync(task.Id);
+            if (existingTask == null)
+                throw new ArgumentException($"Task with id {task.Id} not found");
+
+            // Обновляем поля существующей задачи
+            existingTask.Title = task.Title;
+            existingTask.Description = task.Description;
+            existingTask.IsCompleted = task.IsCompleted;
+            existingTask.Priority = task.Priority;
+            existingTask.DueDate = task.DueDate;
+            existingTask.CreatedAt = task.CreatedAt;
 
             await _context.SaveChangesAsync();
             return existingTask;

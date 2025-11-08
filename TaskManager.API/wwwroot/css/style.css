@@ -1,2 +1,54 @@
 ﻿body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+
+.container {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.edit-input {
+    padding: 5px;
+    border: 1px solid #007bff;
+    border-radius: 3px;
+    font-size: 14px;
+    margin-right: 5px;
+}
+
+.save-btn, .cancel-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-left: 5px;
+    font-size: 14px;
+}
+
+    .save-btn:hover {
+        color: #28a745;
+    }
+
+    .cancel-btn:hover {
+        color: #dc3545;
+    }
+
+.edit-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px;
+}
+
+    .edit-btn:hover {
+        color: #007bff;
+    }
+
+.task-item.completed .task-title {
+    text-decoration: line-through;
+    opacity: 0.6;
 }

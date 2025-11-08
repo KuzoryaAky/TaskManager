@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TaskManager.Core.Entities;
+using TaskManager.Core.Interfaces;
 using TaskManager.Infrastructure.Repositiries;
 
 namespace TaskManager.API.Controllers
@@ -8,9 +9,10 @@ namespace TaskManager.API.Controllers
     [Route("api/[controller]")]
     public class TaskController : ControllerBase
     {
-        private readonly TaskRepository _taskRepository;
+        //private readonly TaskRepository _taskRepository;
+        private readonly ITaskRepository _taskRepository;
 
-        public TaskController(TaskRepository taskRepository)
+        public TaskController(ITaskRepository taskRepository)
         {
             _taskRepository = taskRepository;
         }
@@ -39,14 +41,17 @@ namespace TaskManager.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<TaskItem>> Update(int id, TaskItem task)
+        public async Task<ActionResult<TaskItem>> UpdateTask(int id, [FromBody] TaskItem updatedTask)
         {
-            if (id != task.Id) return BadRequest("ID in URL does not match ID in body");
+            if (id != updatedTask.Id)
+                return BadRequest();
 
-            var updateTask = await _taskRepository.UpdateAsync(id, task);
-            if (updateTask == null) return NotFound();
+            var existingTask = await _taskRepository.GetByIdAsync(id);
+            if (existingTask == null)
+                return NotFound();
 
-            return Ok(updateTask);
+            var result = await _taskRepository.UpdateAsync(updatedTask);
+            return Ok(result);
         }
 
         [HttpDelete("{id}")]
@@ -55,6 +60,18 @@ namespace TaskManager.API.Controllers
             var result = await _taskRepository.DeleteAsync(id);
             if (!result) return NotFound();
             
+            return Ok(result);
+        }
+
+        [HttpPatch("{id}/toggle")]
+        public async Task<ActionResult<TaskItem>> ToggleTask(int id)
+        {
+            var task = await _taskRepository.GetByIdAsync(id);
+            if (task == null)
+                return NotFound();
+
+            task.IsCompleted = !task.IsCompleted;
+            var result = await _taskRepository.UpdateAsync(task);
             return Ok(result);
         }
     }
