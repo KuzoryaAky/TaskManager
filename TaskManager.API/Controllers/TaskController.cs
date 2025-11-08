@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TaskManager.Core.Entities;
 using TaskManager.Core.Interfaces;
-using TaskManager.Infrastructure.Repositiries;
 
 namespace TaskManager.API.Controllers
 {
@@ -9,7 +8,6 @@ namespace TaskManager.API.Controllers
     [Route("api/[controller]")]
     public class TaskController : ControllerBase
     {
-        //private readonly TaskRepository _taskRepository;
         private readonly ITaskRepository _taskRepository;
 
         public TaskController(ITaskRepository taskRepository)

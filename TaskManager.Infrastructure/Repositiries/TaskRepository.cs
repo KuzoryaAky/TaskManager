@@ -22,32 +22,16 @@ namespace TaskManager.Infrastructure.Repositiries
             return task;
         }
 
-        //public async Task<TaskItem> CreateAsync(TaskItem task)
-        //{
-        //    _context.Tasks.Add(task);
-        //    await _context.SaveChangesAsync();
-        //    return task;
-        //}
-
         public async Task<TaskItem> CreateAsync(TaskItem task)
         {
-            // Убедимся, что Title не null
             if (string.IsNullOrEmpty(task.Title))
-            {
                 task.Title = task.Description ?? "New Task";
-            }
 
-            // Убедимся, что CreateDate установлена
             if (task.CreatedAt == default)
-            {
                 task.CreatedAt = DateTime.UtcNow;
-            }
 
-            // Убедимся, что Priority установлен
             if (task.Priority == 0)
-            {
                 task.Priority = 1;
-            }
 
             _context.Tasks.Add(task);
             await _context.SaveChangesAsync();
@@ -61,7 +45,6 @@ namespace TaskManager.Infrastructure.Repositiries
             if (existingTask == null)
                 throw new ArgumentException($"Task with id {task.Id} not found");
 
-            // Обновляем поля существующей задачи
             existingTask.Title = task.Title;
             existingTask.Description = task.Description;
             existingTask.IsCompleted = task.IsCompleted;
