@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using TaskManager.Core.Entities;
 using TaskManager.Core.Interfaces;
 
@@ -9,56 +10,83 @@ namespace TaskManager.API.Controllers
     public class TaskController : ControllerBase
     {
         private readonly ITaskRepository _taskRepository;
+        private readonly ILogger<TaskController> _logger;
 
-        public TaskController(ITaskRepository taskRepository)
+        public TaskController(ITaskRepository taskRepository, ILogger<TaskController> logger)
         {
             _taskRepository = taskRepository;
-        }
-
-        [HttpGet]
-        public async Task<ActionResult<List<TaskItem>>> GetAll()
-        {
-            var tasks = await _taskRepository.GetAllAsync();
-            return Ok(tasks);
+            _logger = logger;
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<TaskItem>> GetById(int id)
         {
+            _logger.LogInformation("Getting task by ID: {TaskId}", id);
             var task = await _taskRepository.GetByIdAsync(id);
             if (task == null) return NotFound();
 
             return Ok(task);
         }
 
-        [HttpPost]
-        public async Task<ActionResult<TaskItem>> Create(TaskItem task)
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<TaskItem>>> GetTasks()
         {
-            var createTask = await _taskRepository.CreateAsync(task);
-            return CreatedAtAction(nameof(GetById), new { id = createTask.Id }, createTask);
+            _logger.LogInformation("GET /api/task - Getting all tasks");
+
+            try
+            {
+                var tasks = await _taskRepository.GetAllAsync();
+                _logger.LogInformation("GET /api/task - Retrieved {TaskCount} tasks", tasks.Count());
+                return Ok(tasks);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GET /api/task - Error retrieving tasks");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<TaskItem>> Create([FromBody] TaskItem task)
+        {
+            _logger.LogInformation("Creating new task: {TaskTitle}", task.Title);
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("POST /api/task - Validation failed: {ValidationErrors}",
+                    string.Join("; ", ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)));
+                return BadRequest(ModelState);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var createdTask = await _taskRepository.CreateAsync(task);
+            return CreatedAtAction(nameof(GetById), new { id = createdTask.Id }, createdTask);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<TaskItem>> UpdateTask(int id, [FromBody] TaskItem updatedTask)
+        public async Task<ActionResult<TaskItem>> UpdateTask(int id, [FromBody] TaskItem task)
         {
-            if (id != updatedTask.Id)
-                return BadRequest();
+            _logger.LogInformation("Updating task ID: {TaskId}", id);
 
-            var existingTask = await _taskRepository.GetByIdAsync(id);
-            if (existingTask == null)
-                return NotFound();
+            if (id != task.Id ) return BadRequest();
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var result = await _taskRepository.UpdateAsync(updatedTask);
-            return Ok(result);
+            var updatedTask = await _taskRepository.UpdateAsync(task);
+
+            return Ok(updatedTask);
         }
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
+            _logger.LogInformation("Deleting task ID: {TaskId}", id);
+
             var result = await _taskRepository.DeleteAsync(id);
             if (!result) return NotFound();
-            
-            return Ok(result);
+            return NoContent();
         }
 
         [HttpPatch("{id}/toggle")]

@@ -43,5 +43,6 @@ app.MapGet("/", async context =>
     await context.Response.SendFileAsync("wwwroot/index.html");
 });
 
+
 app.Run();
 

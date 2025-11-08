@@ -164,3 +164,43 @@ function cancelEdit(taskId, originalDescription) {
     // Возвращаем оригинальный текст
     taskTitle.innerHTML = originalDescription;
 }
+async function testValidation() {
+    console.log('=== Testing validation ===');
+
+    // Тест 1: Пустые данные
+    console.log('Test 1: Empty object');
+    await sendTestRequest({});
+
+    // Тест 2: Только пробелы
+    console.log('Test 2: Only spaces');
+    await sendTestRequest({
+        title: "   ",
+        description: "   "
+    });
+
+    // Тест 3: Слишком длинное описание
+    console.log('Test 3: Very long description');
+    await sendTestRequest({
+        title: "Test",
+        description: "A".repeat(600) // > 500 символов
+    });
+}
+
+async function sendTestRequest(testData) {
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(testData)
+        });
+
+        console.log(`Status: ${response.status}`);
+        const result = await response.text();
+        console.log('Response:', result);
+        console.log('---');
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
