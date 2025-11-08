@@ -55,3 +55,5 @@ nunit-*.xml
 
 
 /TaskManager.API/appsettings.Development.json
+/.config/dotnet-tools.json
+/.vs
