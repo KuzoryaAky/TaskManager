@@ -57,3 +57,6 @@ nunit-*.xml
 /TaskManager.API/appsettings.Development.json
 /.config/dotnet-tools.json
 /.vs
+/node_modules
+/package-lock.json
+/package.json
