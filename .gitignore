@@ -55,3 +55,4 @@ nunit-*.xml
 
 appsettings.Development.json
 appsettings.Production.json
+/TaskManager.API/appsettings.Development.json
