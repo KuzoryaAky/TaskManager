@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TaskManager.Core.Entities;
+﻿using TaskManager.Core.Models;
 
 namespace TaskManager.Core.Interfaces
 {
@@ -15,5 +10,6 @@ namespace TaskManager.Core.Interfaces
         Task<TaskItem> CreateAsync(TaskItem task);
         Task<TaskItem> UpdateAsync(TaskItem task);
         Task<bool> DeleteAsync(int id);
+        Task<PagedResult<TaskItem>> GetPagedAsync(TaskQueryParameters parameters);
     }
 }

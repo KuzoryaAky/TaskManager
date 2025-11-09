@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace TaskManager.Core.Entities
+namespace TaskManager.Core.Models
 {
     public class TaskItem
     {

@@ -1,7 +1,6 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using TaskManager.Core.Entities;
+﻿using Microsoft.AspNetCore.Mvc;
 using TaskManager.Core.Interfaces;
+using TaskManager.Core.Models;
 
 namespace TaskManager.API.Controllers
 {
@@ -99,6 +98,27 @@ namespace TaskManager.API.Controllers
             task.IsCompleted = !task.IsCompleted;
             var result = await _taskRepository.UpdateAsync(task);
             return Ok(result);
+        }
+
+        [HttpGet("paged")]
+        public async Task<ActionResult<PagedResult<TaskItem>>> GetPaged([FromQuery] TaskQueryParameters parameters)
+        {
+            _logger.LogInformation("GET /api/task/paged - Page: {Page}, Size: {Size}", 
+                parameters.PageNumber, parameters.PageSize);
+
+            try
+            {
+                var result = await _taskRepository.GetPagedAsync(parameters);
+                _logger.LogInformation("GET /api/task/paged - Returned {Count} of {Total} tasks",
+                    result.Items.Count(), result.TotalCount);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GET /api/task/paged - Error retrieving paged tasks");
+                return StatusCode(500, "Internal server error");
+            }
+
         }
     }
 }
